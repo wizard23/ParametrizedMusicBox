@@ -2,15 +2,15 @@ use <MCAD/involute_gears.scad>
 
 $fn=32;
 
-FOR_PRINT=false;
+FOR_PRINT=true;
 
 DEBUG_GEARS=false;
 
-GENERATE_MUSIC_CYLINDER=true;
-GENERATE_MID_GEAR=true;
-GENERATE_CRANK_GEAR=false;
+GENERATE_MUSIC_CYLINDER=false;
+GENERATE_MID_GEAR=false;
+GENERATE_CRANK_GEAR=true;
 
-GENERATE_CASE=true;
+GENERATE_CASE=false;
 
 GENERATE_CRANK=false;
 GENERATE_PULLEY=false;
@@ -38,7 +38,7 @@ musicAxisHolderH=1.9;
 
 pulleySlack=0.4;
 crankSlack=0.2;
-snapAxisSlack=0.1; // for extra distance from axis to gears
+snapAxisSlack=0.4; // for extra distance from axis to gears
 axisSlack=0.3; // for crank gear axis
 
 pulleySnapL=1.2; // cutout to get Pulley in
