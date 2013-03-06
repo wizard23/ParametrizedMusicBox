@@ -4,16 +4,16 @@ $fn=32;
 
 FOR_PRINT=false;
 
-DEBUG_GEARS=true;
+DEBUG_GEARS=false;
 
 GENERATE_MUSIC_CYLINDER=true;
 GENERATE_MID_GEAR=true;
-GENERATE_CRANK_GEAR=true;
+GENERATE_CRANK_GEAR=false;
 
 GENERATE_CASE=true;
 
-GENERATE_CRANK=true;
-GENERATE_PULLEY=true;
+GENERATE_CRANK=false;
+GENERATE_PULLEY=false;
 
 
 //pitch=2*3.1415*pitchRadius/numberTeeth;
@@ -24,14 +24,17 @@ circular_pitch = 180/diametral_pitch;
 addendum = 1/diametral_pitch;
 
 
-gearH=3;
+gearH=4;
 wall=2;
 
 
+pinH=1;
+
 // HoldderH is the height of the axis kegel
+
 crankAxisHolderH = 1.5;
-midAxisHolderH=2;
-musicAxisHolderH=2;
+midAxisHolderH=1.9;
+musicAxisHolderH=1.9;
 
 pulleySlack=0.4;
 crankSlack=0.2;
@@ -44,7 +47,7 @@ gear_tolerance = 0.1;
 // used for the distance between paralell gears that should not touch (should be slightly larger than your layer with) 
 gear_gap = 1.0;
 gear_min_gap = 0.1;
-gear_hold_R = 3;
+gear_hold_R = 2;
 
 epsilonCSG = 0.1;
 
@@ -61,7 +64,7 @@ pulleyH=10;
 pulleyR=crankAxisR+2*wall;
 
 
-musicCylinderTeeth = 42;
+musicCylinderTeeth = 44;
 midSmallTeeth = 8;
 midBigTeeth = 33;
 crankTeeth = 11;
@@ -123,55 +126,80 @@ posYEnd = sin(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
 // case shape
 if (GENERATE_CASE)
 {	
+	intersection()
+	{
+		if (FOR_PRINT)
+		{
+			translate([0,0, 500+negXEnd*sin(noteAlpha)]) cube([1000, 1000, 1000], center=true);
+		}
 	rotate([FOR_PRINT?180:0, FOR_PRINT?-noteAlpha:0,0])
 	{
 
-	// snapaxis for crank
-	MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
-
-
-	//!MyAxisSnapHolder(h=musicAxisHolderH, mirr=1, extra=gearH+2*gear_gap);
-
-	// snapaxis for music cylinder
-	MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=1, extra=gearH+2*gear_gap);
-	MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=0);
-
-	// snapaxis for mid gear
-	MyAxisSnapHolder(h=midAxisHolderH, y =1.5*gearH, x=midGearXPos, z=midGearZPos, mirr=1);
-	MyAxisSnapHolder(h=midAxisHolderH, y =gearH/2-gear_gap, x=midGearXPos, z=midGearZPos, mirr=0);
-
 	difference()
 	{
-		// side poly extruded and rotated to be side
-		rotate([-90,0,0]){
-			translate([0,0,-(gearH/2+gear_gap+wall)])
-				linear_extrude(height=2*(gearH+gear_gap+wall)) 
-					polygon(points=[[negXEnd,0],[posXEnd,-posYEnd],[posXEnd,frameH], [negXEnd,frameH]], paths=[[0,1,2,3]]);
+		union()
+		{
+	
+		// snapaxis for crank
+		MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
+	
+	
+	
+		// snapaxis for music cylinder
+		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=1, extra=gearH+2*gear_gap);
+		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=0);
+	
+		// snapaxis for mid gear
+		MyAxisSnapHolder(h=midAxisHolderH, y =1.5*gearH, x=midGearXPos, z=midGearZPos, mirr=1);
+		MyAxisSnapHolder(h=midAxisHolderH, y =gearH/2-gear_gap, x=midGearXPos, z=midGearZPos, mirr=0);
+	
+		difference()
+		{
+			// side poly extruded and rotated to be side
+			rotate([-90,0,0]){
+				translate([0,0,-(gearH/2+gear_gap+wall)])
+					linear_extrude(height=2*(gearH+gear_gap+wall)) 
+						polygon(points=[[negXEnd,0],[posXEnd,-posYEnd],[posXEnd,frameH], [negXEnd,frameH]], paths=[[0,1,2,3]]);
+	
+			
+			}
 
-		
-		}
-		// cutout, wall then remain
+// cutout, wall then remain
 		linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[[negXEnd+wall,-(0.5*gearH+gear_gap)],
 
 
-[1.5*crankAxisR,-(0.5*gearH+gear_gap)],
-[1.5*crankAxisR,-(2.5*gearH+gear_gap)],
-[midGearXPos-1.5*crankAxisR,-(2.5*gearH+gear_gap)],
-[midGearXPos-1.5*crankAxisR,-(0.5*gearH+gear_gap)],
+//[1.5*crankAxisR,-(0.5*gearH+gear_gap)],
+//[1.5*crankAxisR,-(2.5*gearH+gear_gap)],
+//[midGearXPos-1.5*crankAxisR,-(2.5*gearH+gear_gap)],
+//[midGearXPos-1.5*crankAxisR,-(0.5*gearH+gear_gap)],
 
-[posXEnd-wall,-(0.5*gearH+gear_gap)],[posXEnd-wall,(1.5*gearH+gear_gap)], [negXEnd+wall,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3,4,5,6,7]]);
-
-		translate([crankGearXPos,0,crankGearZPos])
-		{
-			rotate([-90,0,0])
-				cylinder(h=100, r=crankAxisR+axisSlack, center=false);
-			rotate([0,180,0]) translate([-(crankAxisR+axisSlack),0,0]) cube([2*(crankAxisR+axisSlack),100, frameH]);
+[posXEnd-wall,-(0.5*gearH+gear_gap)],[posXEnd-wall,(1.5*gearH+gear_gap)], [negXEnd+wall,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
+	
+			translate([crankGearXPos,0,crankGearZPos])
+			{
+				rotate([-90,0,0])
+					cylinder(h=100, r=crankAxisR+axisSlack, center=false);
+				rotate([0,180,0]) translate([-(crankAxisR+axisSlack),0,0]) cube([2*(crankAxisR+axisSlack),100, frameH]);
+			}
+	translate([+500+crankGearXPos-crankR-2*addendum, -500, -500-3*crankAxisR+crankGearZPos]) cube([1000,1000,1000], center=true);
 		}
-translate([+500+crankGearXPos-crankR-2*addendum, -500, -500-3*crankAxisR+crankGearZPos]) cube([1000,1000,1000], center=true);
 	}
 
+		// cutout, wall then remain
+		linear_extrude(height=4*frameH, center=true) 
+					polygon(points=[
+
+[1*crankAxisR,(1.5*gearH+gear_gap)],
+[1*crankAxisR,-(2.5*gearH+gear_gap)],
+[musicCylinderR+1.5*addendum,-(2.5*gearH+gear_gap)],
+[musicCylinderR+1.5*addendum,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
+
 	}
+
+
+	}
+}
 }
 
 
