@@ -6,7 +6,7 @@ FOR_PRINT=false;
 
 DEBUG_GEARS=true;
 	
-GENERATE_MUSIC_CYLINDER=0;
+GENERATE_MUSIC_CYLINDER=1;
 GENERATE_MID_GEAR=0;
 GENERATE_CRANK_GEAR=0;
 
@@ -16,6 +16,47 @@ GENERATE_CRANK=0;
 GENERATE_PULLEY=0;
 
 
+
+
+
+/// music section
+
+// also nr of notes
+pinNrX = 8;
+pinNrY = 20;
+
+
+
+teethNotes="C0 D0 E0 F0 G0 A0 B0 C1 D1 E1 F1 G1 A1 B1 C2 ";
+pins = 
+"
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+X X X                                X X              X               X               X         X    X `           X             X             X           
+
+       X X     X    X XX   X    X      
+
+         X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     X";
+
+
+teethH = 0.6;
+
+pinH=1.2;
+pinD=1;
+
+teethHolderW=10;
+teethHolderH=4.5;
+
+
+//// Constants 
+epsilon = 0.01;
+baseFrequC0 = 16.3516;
+ro_PLA = (1210 + 1430)/2; // http://de.wikipedia.org/wiki/Polylactide
+E_PLA = 1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html 2,5 - 7,8 GPa
+gammaTooth = 1.875; // http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
+
+
+
+
 //pitch=2*3.1415*pitchRadius/numberTeeth;
 
 diametral_pitch = 0.6;
@@ -23,9 +64,19 @@ circular_pitch = 180/diametral_pitch;
 
 addendum = 1/diametral_pitch;
 
-musicH=60;
+musicH=20;
 gearH=3;
 wall=2;
+
+//// Derived Music stuff
+teethGap = pinH/2;
+
+pinStepX = musicH/pinNrX;
+pinStepY = 360/pinNrY;
+
+teethW = pinStepX-teethGap;
+maxTeethL=TeethLen(0); // convention index 0 is lowest note
+///////////////////////
 
 
 pinH=1;
@@ -78,7 +129,8 @@ centerForCrankGearInsertion=(midBigR+crankR)/2;
 
 
 
-noteExtend = wall+20;
+//noteExtend = wall+20;
+noteExtend = teethHolderW+maxTeethL;
 noteAlpha = 10;
 
 
@@ -228,30 +280,35 @@ paths=[[0,1,2,3]]);
 				rotate([0,-90-max(crankGearAngle,45+noteAlpha),0]) 
 				{
 
-					translate([-(crankAxisR-axisSlack),0,0]) cube([2*(crankAxisR),100, centerForCrankGearInsertion]);
+					*translate([-(crankAxisR-axisSlack),0,0]) cube([2*(crankAxisR),100, centerForCrankGearInsertion]);
+
+					
+rotate([-90,0,0])
+linear_extrude(height=musicH/2, center=false) 
+					polygon(points=[
+[-(crankAxisR+axisSlack),-centerForCrankGearInsertion],
+[(crankAxisR+axisSlack),-centerForCrankGearInsertion],
+[(crankAxisR),0],
+[-(crankAxisR),0]],
+paths=[[0,1,2,3]]);
+//cube([100,100,2*frameH]);
+
+
 
 					translate([0*(crankR+addendum*1.5),0,centerForCrankGearInsertion])
 					rotate([90,0,0])
-					#cylinder(h=100, r=(crankR+addendum*1.5), center=false);
+					cylinder(h=100, r=(crankR+addendum*1.5), center=false);
 
 					translate([0*(crankR+addendum*1.5),0,centerForCrankGearInsertion])
 					mirror([0,1,0])
 					rotate([90,0,0])
-					#cylinder(h=100, r=crankAxisR+axisSlack, center=false);
+					cylinder(h=100, r=crankAxisR+axisSlack, center=false);
 
 				}	
 			}
 
-// TODO relace with rotate gearsiced cube
-	*translate([+500+crankGearXPos-crankR-2*addendum, -500, -500-3*crankAxisR+crankGearZPos]) cube([1000,1000,1000], center=true);
-		
-
 	}
 	
-
-
-
-
 	}
 }
 }
@@ -267,9 +324,13 @@ if (GENERATE_MUSIC_CYLINDER)
 		{
 			union()
 			{
-				MusicCylinder();
 				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2);
-				rotate([0, 180,0]) cylinder(h=musicH+gearH/2, r =musicCylinderR);
+				rotate([0, 180,0]) 
+translate([0,0,gearH/2]) 
+{
+MusicCylinder();
+//cylinder(h=musicH, r = musicCylinderR);
+}
 				// PINS :)
 			}
 			MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-musicH, mirr=0);
@@ -453,26 +514,87 @@ union(){
 
 
 
-/// music section
+echo(1000 * LengthOfTooth(240, 0.002, E_PLA, ro_PLA));
+echo(1000 * LengthOfTooth(340, 0.002, E_PLA, ro_PLA));
+echo(1000 * LengthOfTooth(440, 0.002, E_PLA, ro_PLA));
+echo(1000 * LengthOfTooth(540, 0.002, E_PLA, ro_PLA));
+echo(1000 * LengthOfTooth(640, 0.002, E_PLA, ro_PLA));
+echo(1000 * LengthOfTooth(740, 0.002, E_PLA, ro_PLA));
+
+echo(NoteToFrequ(9, 4, 0));
 
 
-pinH = 2.5;
-pinR = 1.5;
-// also nr of notes
-pinNrX = 15;
-pinNrY = 12;
-teethNotes="C0 D0 E0 F0 G0 A0 B0 C1 D1 E1 F1 G1 A1 B1 C2 ";
-teethGap = 1;
-teethH = 0.6;
+//// SPECFIC functions
+function TeethLen(x) = 
+	1000*LengthOfTooth(NoteToFrequ(LetterToNoteIndex(teethNotes[x*3]), 
+			LetterToDigit(teethNotes[x*3+1]),
+			AccidentalToNoteShift(teethNotes[x*3+2])),
+			teethH/1000, E_PLA, ro_PLA);
 
-teethHolderW=10;
-teethHolderH=4.5;
+
+
+//// PLATONIC functions
+// http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
+// f [Hz]
+// h m
+// E N/m2
+// ro kg/m3
+function LengthOfTooth(f, h, E, ro) =
+sqrt((gammaTooth*gammaTooth*h/(4*PI*f))*sqrt(E/(3*ro)));
+
+function NoteToFrequ(note, octave, modification) = baseFrequC0*pow(2, octave)*pow(2, note/12);
+
+function AccidentalToNoteShift(l) =
+l=="#"?1:
+l=="b"?-1:
+0;
+
+function LetterToNoteIndex(l) =
+l=="C"?0:
+l=="D"?2:
+l=="E"?4:
+l=="F"?5:
+l=="G"?7:
+l=="A"?9:
+l=="H"?11:
+l=="B"?11: // allow B and H
+0;
+
+function LetterToDigit(l) = 
+l=="0"?0:
+l=="1"?1:
+l=="2"?2:
+l=="3"?3:
+l=="4"?4:
+l=="5"?5:
+l=="6"?6:
+l=="7"?7:
+l=="8"?8:
+l=="9"?9:
+0;
+
+
+
+
+
+module Pin()
+{
+	difference()
+	{
+		//cylinder(h=2*pinH, r=pinStepX/2, center=true, $fn=4);
+		translate([pinH,0,0])
+		cube([pinStepX+pinH, pinD, 2*pinH],center=true);
+
+translate([pinStepX/2,0,0])
+		rotate([0,-45,0]) translate([2.0*pinStepX+pinH/2,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
+	}
+}
 
 
 
 module MusicCylinder()
 {
-	translate([0,0,-epsilon]) cylinder(r = musicCylinderR, h = musicCylinderH + epsilon, center=false, $fn=128);
+	translate([0,0,0]) cylinder(r = musicCylinderR, h = musicH, center=false, $fn=128);
 	for (x = [0:pinNrX-1], y = [0:pinNrY-1])
 	{
 		assign(index = y*pinNrX + x)
@@ -487,3 +609,36 @@ module MusicCylinder()
 		}
 	}
 }
+
+union()
+{
+
+translate([-musicCylinderR,0,0]) MusicBox();
+
+}
+
+module MusicBox()
+{
+	//mirror([0,0,1])
+	rotate([180,0,0])
+	for (x = [0:pinNrX-1])
+	{
+		assign(ll = TeethLen(x))
+		{
+			translate([-maxTeethL, x *pinStepX, 0]) 
+			{
+				// teeth holder
+				translate([-(teethHolderW), 0, 0]) 
+					cube([teethHolderW+maxTeethL-ll, pinStepX, teethHolderH]);
+
+				// teeth
+				translate([-teethHolderW/2, teethGap,0])
+				color([0,1,0])cube([maxTeethL+teethHolderW/2, teethW, teethH]);
+			}
+		}
+	}
+	// teethholder
+	translate([-(maxTeethL+teethHolderW), -(1.5*axisGap+musicCylinderGearThickness), 0]) 
+		cube([teethHolderW, musicCylinderGearThickness+3*axisGap, teethHolderH]);
+}
+
