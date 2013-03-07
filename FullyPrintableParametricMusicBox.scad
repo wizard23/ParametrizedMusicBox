@@ -8,7 +8,7 @@ DEBUG_GEARS=0;
 	
 GENERATE_MUSIC_CYLINDER=1;
 GENERATE_MID_GEAR=1;
-GENERATE_CRANK_GEAR=1;
+GENERATE_CRANK_GEAR=0;
 
 GENERATE_CASE=1;
 
@@ -30,7 +30,7 @@ musicAxisHolderH=3;
 
 pulleySlack=0.4;
 crankSlack=0.2;
-snapAxisSlack=0.6; // for extra distance from axis to gears
+snapAxisSlack=0.75; // for extra distance from axis to gears
 axisSlack=0.3; // for crank gear axis to case
 
 pulleySnapL=1.2; // cutout to get Pulley in
@@ -359,7 +359,7 @@ paths=[[0,1,2,3]]);
 if (GENERATE_MUSIC_CYLINDER)
 {
 
-	rotate([FOR_PRINT?0:-90,0,0])
+	rotate([FOR_PRINT?180:-90,0,0])
 		translate([0,0,-gear_gap])
 		difference()
 		{
@@ -671,8 +671,8 @@ module MusicBox()
 			translate([-maxTeethL, x *pinStepX, 0]) 
 			{
 				// teeth holder
-				translate([-(teethHolderW), 0, 0]) 
-					cube([teethHolderW+maxTeethL-ll, pinStepX, teethHolderH]);
+				translate([-(teethHolderW), epsilonCSG, 0]) 
+					cube([teethHolderW+maxTeethL-ll, pinStepX+2*epsilonCSG, teethHolderH]);
 
 				// teeth
 				translate([-teethHolderW/2, teethGap,0])
