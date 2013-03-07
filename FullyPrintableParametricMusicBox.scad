@@ -24,7 +24,7 @@ circular_pitch = 180/diametral_pitch;
 addendum = 1/diametral_pitch;
 
 musicH=7;
-gearH=4;
+gearH=3;
 wall=2;
 
 
@@ -227,8 +227,8 @@ if (GENERATE_MUSIC_CYLINDER)
 		difference()
 		{
 			MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+musicH);
-			#MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-musicH, mirr=0);
-			#MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
+			MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-musicH, mirr=0);
+			MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
 		}
 }
 
