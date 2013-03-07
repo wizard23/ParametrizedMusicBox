@@ -7,8 +7,8 @@ FOR_PRINT=false;
 DEBUG_GEARS=true;
 	
 GENERATE_MUSIC_CYLINDER=1;
-GENERATE_MID_GEAR=0;
-GENERATE_CRANK_GEAR=0;
+GENERATE_MID_GEAR=1;
+GENERATE_CRANK_GEAR=1;
 
 GENERATE_CASE=1;
 
@@ -38,20 +38,20 @@ X X X                                X X              X               X         
          X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     XXXXXXX   X  X  X X XX     X     X     X     X";
 
 
-teethH = 0.6;
+teethH = 3*0.3;
 
 pinH=1.2;
 pinD=1;
 
-teethHolderW=10;
-teethHolderH=4.5;
+teethHolderW=4;
+teethHolderH=7;
 
 
 //// Constants 
 epsilon = 0.01;
 baseFrequC0 = 16.3516;
-ro_PLA = (1210 + 1430)/2; // http://de.wikipedia.org/wiki/Polylactide
-E_PLA = 1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html 2,5 - 7,8 GPa
+ro_PLA = 0.8* (1210 + 1430)/2; // http://de.wikipedia.org/wiki/Polylactide
+E_PLA = 1.4*   1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html 2,5 - 7,8 GPa
 gammaTooth = 1.875; // http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
 
 
@@ -64,12 +64,12 @@ circular_pitch = 180/diametral_pitch;
 
 addendum = 1/diametral_pitch;
 
-musicH=20;
 gearH=3;
 wall=2;
+musicH=pinNrX*wall;
 
 //// Derived Music stuff
-teethGap = pinH/2;
+teethGap = pinH/(2*sqrt(2));
 
 pinStepX = musicH/pinNrX;
 pinStepY = 360/pinNrY;
@@ -129,13 +129,15 @@ centerForCrankGearInsertion=(midBigR+crankR)/2;
 
 
 
-//noteExtend = wall+20;
-noteExtend = teethHolderW+maxTeethL;
 noteAlpha = 10;
-
-
 midGearAngle=-10;
 crankGearAngle=35;
+
+//noteExtend = wall+20;
+noteExtend = teethHolderW+maxTeethL +pinH; //+wall+sin(noteAlpha)*wall;
+
+echo(sin(noteAlpha)*wall);
+
 
 
 midGearDist = musicCylinderR+midSmallR;
@@ -181,7 +183,7 @@ posYEnd = tan(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
 
 
 // case shape
-color([1,0,0])
+
 if (GENERATE_CASE)
 {	
 	intersection()
@@ -197,6 +199,14 @@ if (GENERATE_CASE)
 	{
 		union()
 		{
+
+		// PIANO :)
+		
+		translate([-(noteExtendX+musicCylinderRX),-(gearH/2+gear_gap),0]) 
+			rotate([0,-noteAlpha*1,0])
+			
+				MusicBox();
+
 	
 		// snapaxis for crank
 		MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2+gear_gap, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
@@ -583,7 +593,7 @@ module Pin()
 	{
 		//cylinder(h=2*pinH, r=pinStepX/2, center=true, $fn=4);
 		translate([pinH,0,0])
-		cube([pinStepX+pinH, pinD, 2*pinH],center=true);
+		cube([pinStepX+2*pinH, pinD, 2*pinH],center=true);
 
 translate([pinStepX/2,0,0])
 		rotate([0,-45,0]) translate([2.0*pinStepX+pinH/2,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
@@ -610,16 +620,13 @@ module MusicCylinder()
 	}
 }
 
-union()
-{
 
-translate([-musicCylinderR,0,0]) MusicBox();
-
-}
 
 module MusicBox()
 {
 	//mirror([0,0,1])
+	translate([teethHolderW+maxTeethL,0,0])
+
 	rotate([180,0,0])
 	for (x = [0:pinNrX-1])
 	{
@@ -637,8 +644,6 @@ module MusicBox()
 			}
 		}
 	}
-	// teethholder
-	translate([-(maxTeethL+teethHolderW), -(1.5*axisGap+musicCylinderGearThickness), 0]) 
-		cube([teethHolderW, musicCylinderGearThickness+3*axisGap, teethHolderH]);
+	
 }
 
