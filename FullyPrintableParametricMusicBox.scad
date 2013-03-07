@@ -1,16 +1,16 @@
 use <MCAD/involute_gears.scad>
 
-$fn=32;
+//$fn=32;
 
-FOR_PRINT=false;
+FOR_PRINT=true;
 
 DEBUG_GEARS=0;
 	
 GENERATE_MUSIC_CYLINDER=1;
-GENERATE_MID_GEAR=1;
+GENERATE_MID_GEAR=0;
 GENERATE_CRANK_GEAR=0;
 
-GENERATE_CASE=1;
+GENERATE_CASE=0;
 
 GENERATE_CRANK=0;
 GENERATE_PULLEY=0;
@@ -30,7 +30,7 @@ musicAxisHolderH=3;
 
 pulleySlack=0.4;
 crankSlack=0.2;
-snapAxisSlack=0.75; // for extra distance from axis to gears
+snapAxisSlack=0.55; // for extra distance from axis to gears
 axisSlack=0.3; // for crank gear axis to case
 
 pulleySnapL=1.2; // cutout to get Pulley in
@@ -73,7 +73,7 @@ crankGearAngle=42;
 
 teethNotes="C0 D0 E0 F0 G0 A0 B0 C1 D1 E1 F1 G1 A1 B1 C2 ";
 pinNrX = 8;
-pinNrY = 33;
+pinNrY = 28;
 
 /*
 A4
@@ -107,7 +107,11 @@ C4 E4 G4
 
 A4 D4 F4
 */
+/*
 pins="X        X        X        X        X        X        X        X      X      X      X      X      X      X      X                       X         X         X           X X X             X X  X        X X X             X X X         X  X X  ";
+*/
+
+pins="    X X             X X              X X            X               X                  X     X      X X            X X           X  X            X  X             XX            X                       ";
 
 teethH = 3*0.3;
 
@@ -115,7 +119,7 @@ pinH=1;
 
 teethGap = max(gear_gap, pinH/(2*sqrt(2)));
 
-pinD=1;
+pinD=1.5;
 
 teethHolderW=4;
 teethHolderH=7;
@@ -365,7 +369,8 @@ if (GENERATE_MUSIC_CYLINDER)
 		{
 			union()
 			{
-				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2);
+				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+0.3);
+				translate([0,0,-gearH/2-gear_gap/2]) cylinder(h=gear_gap+epsilon_CSG, r2=musicCylinderR-addendum, r1=musicCylinderR-addendum+gear_gap);
 				rotate([0, 180,0]) 
 translate([0,0,teethGap+gearH/2]) 
 {
@@ -629,7 +634,7 @@ module Pin()
 	{
 		//cylinder(h=2*pinH, r=pinStepX/2, center=true, $fn=4);
 		translate([-pinStepX/2,-pinD/2,-pinH])
-		cube([pinStepX+teethGap, pinD, 2*pinH],center=false);
+		cube([pinStepX+teethGap, pinD, 2*(pinH+0.55)],center=false);
 
 translate([pinStepX/2,0,0])
 		rotate([0,-45,0]) translate([2.0*pinStepX+pinH/2,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
@@ -640,7 +645,7 @@ translate([pinStepX/2,0,0])
 
 module MusicCylinder(extra=0)
 {
-	translate([0,0,-extra]) cylinder(r = musicCylinderR, h = musicH+extra, center=false, $fn=128);
+	translate([0,0,-extra]) cylinder(r = musicCylinderR-0.3, h = musicH+extra, center=false, $fn=128);
 	for (x = [0:pinNrX-1], y = [0:pinNrY-1])
 	{
 		assign(index = y*pinNrX + x)
