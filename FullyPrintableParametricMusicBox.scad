@@ -2,18 +2,18 @@ use <MCAD/involute_gears.scad>
 
 //$fn=32;
 
-FOR_PRINT=true;
+FOR_PRINT=false;
 
-DEBUG_GEARS=0;
+DEBUG_GEARS=1;
 	
 GENERATE_MUSIC_CYLINDER=1;
-GENERATE_MID_GEAR=0;
-GENERATE_CRANK_GEAR=0;
+GENERATE_MID_GEAR=1;
+GENERATE_CRANK_GEAR=1;
 
-GENERATE_CASE=0;
+GENERATE_CASE=1;
 
-GENERATE_CRANK=0;
-GENERATE_PULLEY=0;
+GENERATE_CRANK=1;
+GENERATE_PULLEY=1;
 
 //////////////////////////////////////
 // general settings
@@ -516,7 +516,7 @@ module MyAxisSnapHolder(h, x=0, y=0, z=0, mirr=0,extra=wall, h2=0)
 	}
 }
 
-module MyGear(n=20, hPos, hNeg, mirr=0)
+module MyGear(n, hPos, hNeg, mirr=0)
 {
 	if (DEBUG_GEARS)
 	{
@@ -530,7 +530,7 @@ module MyGear(n=20, hPos, hNeg, mirr=0)
 
 
 // based on Emmet's herringbone gear taken from thing: TODO
-module HBgear(n,hPos,hNeg,mirr=0, tol=.25)// herringbone gear
+module HBgear(n,hPos,hNeg,mirr=0, tol=0.25)// herringbone gear
 {
 twistScale=50;
 mirror([mirr,0,0])
