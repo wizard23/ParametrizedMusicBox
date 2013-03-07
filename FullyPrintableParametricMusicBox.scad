@@ -10,10 +10,10 @@ GENERATE_MUSIC_CYLINDER=true;
 GENERATE_MID_GEAR=true;
 GENERATE_CRANK_GEAR=true;
 
-GENERATE_CASE=false;
+GENERATE_CASE=true;
 
-GENERATE_CRANK=false;
-GENERATE_PULLEY=false;
+GENERATE_CRANK=true;
+GENERATE_PULLEY=true;
 
 
 //pitch=2*3.1415*pitchRadius/numberTeeth;
@@ -23,7 +23,7 @@ circular_pitch = 180/diametral_pitch;
 
 addendum = 1/diametral_pitch;
 
-musicH=7;
+musicH=60;
 gearH=3;
 wall=2;
 
@@ -127,6 +127,7 @@ posYEnd = tan(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
 
 
 // case shape
+color([1,0,0])
 if (GENERATE_CASE)
 {	
 	intersection()
@@ -226,13 +227,19 @@ if (GENERATE_MUSIC_CYLINDER)
 		translate([0,0,-gear_gap])
 		difference()
 		{
-			MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+musicH);
+			union()
+			{
+				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2);
+				rotate([0, 180,0]) cylinder(h=musicH+gearH/2, r =musicCylinderR);
+				// PINS :)
+			}
 			MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-musicH, mirr=0);
 			MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
 		}
 }
 
 // midGear
+color([0,0,1])
 if (GENERATE_MID_GEAR)
 {
 	translate([midGearXPos,0,midGearZPos])
@@ -280,6 +287,7 @@ if (GENERATE_CRANK_GEAR)
 }
 
 // crank
+color([0,1,0])
 if (GENERATE_CRANK)
 {
 	translate([FOR_PRINT?0:crankGearXPos, FOR_PRINT?0:1.5*gearH+2*gear_gap+wall+crankH, FOR_PRINT?0:crankGearZPos])
