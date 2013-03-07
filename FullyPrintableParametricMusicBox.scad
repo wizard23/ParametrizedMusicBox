@@ -4,16 +4,16 @@ $fn=32;
 
 FOR_PRINT=false;
 
-DEBUG_GEARS=false;
+DEBUG_GEARS=true;
+	
+GENERATE_MUSIC_CYLINDER=0;
+GENERATE_MID_GEAR=0;
+GENERATE_CRANK_GEAR=0;
 
-GENERATE_MUSIC_CYLINDER=true;
-GENERATE_MID_GEAR=true;
-GENERATE_CRANK_GEAR=true;
+GENERATE_CASE=1;
 
-GENERATE_CASE=true;
-
-GENERATE_CRANK=true;
-GENERATE_PULLEY=true;
+GENERATE_CRANK=0;
+GENERATE_PULLEY=0;
 
 
 //pitch=2*3.1415*pitchRadius/numberTeeth;
@@ -74,6 +74,8 @@ midSmallR = (midSmallTeeth/diametral_pitch)/2;
 midBigR = (midBigTeeth/diametral_pitch)/2;
 crankR = (crankTeeth/diametral_pitch)/2;
 
+centerForCrankGearInsertion=(midBigR+crankR)/2;
+
 
 
 noteExtend = wall+20;
@@ -81,7 +83,7 @@ noteAlpha = 10;
 
 
 midGearAngle=-10;
-crankGearAngle=30;
+crankGearAngle=35;
 
 
 midGearDist = musicCylinderR+midSmallR;
@@ -118,7 +120,7 @@ musicCylinderRX = cos(noteBeta)*musicCylinderR;
 
 
 negXEnd = -(noteExtendX+musicCylinderRX);
-posXEnd = crankGearXPos + crankR + 2*addendum + wall;
+posXEnd = crankGearXPos + crankR + 1.5*addendum + wall;
 
 posYEnd = tan(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
 
@@ -180,13 +182,7 @@ if (GENERATE_CASE)
  [negXEnd+wall,(1.5*gearH+gear_gap)]
 ], paths=[[0,1,2,3,4,5,6]]);
 	
-			translate([crankGearXPos,0,crankGearZPos])
-			{
-				rotate([-90,0,0])
-					cylinder(h=100, r=crankAxisR+axisSlack, center=false);
-				rotate([0,180,0]) translate([-(crankAxisR+axisSlack),0,0]) cube([2*(crankAxisR+axisSlack),100, frameH]);
-			}
-	translate([+500+crankGearXPos-crankR-2*addendum, -500, -500-3*crankAxisR+crankGearZPos]) cube([1000,1000,1000], center=true);
+
 		}
 	}
 
@@ -199,13 +195,55 @@ if (GENERATE_CASE)
 [musicCylinderR+1.5*addendum,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
 
 
-// cutout for smallgear
+// cutout because of narrow smallgear
 			linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[
 [1*crankAxisR,-(0.5*gearH+2*gear_gap+wall)],
 [1*crankAxisR,-100],
 [posXEnd+1,-100],
 [posXEnd+1,-(0.5*gearH+2*gear_gap+wall)]], paths=[[0,1,2,3]]);
+
+
+			// Crank Gear Cutouts
+			translate([crankGearXPos,0,crankGearZPos])
+			{
+				rotate([-90,0,0])
+					cylinder(h=100, r=crankAxisR+axisSlack, center=false);
+
+
+
+*rotate([0,180-90-max(crankGearAngle,45+noteAlpha),0]) 
+				//translate([-(crankR+addendum*1.5),0,0]) 
+//mirror([0,1,0]) 
+rotate([90,0,0])
+#linear_extrude(height=musicH/2, center=false) 
+					polygon(points=[
+[-(crankR+addendum*1.5),-1*frameH],
+[(crankR+addendum*1.5),-1*frameH],
+[(crankR+addendum*1.5),0],
+[-(crankR+addendum*1.5),0]],
+paths=[[0,1,2,3]]);
+//cube([100,100,2*frameH]);
+
+				rotate([0,-90-max(crankGearAngle,45+noteAlpha),0]) 
+				{
+
+					translate([-(crankAxisR-axisSlack),0,0]) cube([2*(crankAxisR),100, centerForCrankGearInsertion]);
+
+					translate([0*(crankR+addendum*1.5),0,centerForCrankGearInsertion])
+					rotate([90,0,0])
+					#cylinder(h=100, r=(crankR+addendum*1.5), center=false);
+
+					translate([0*(crankR+addendum*1.5),0,centerForCrankGearInsertion])
+					mirror([0,1,0])
+					rotate([90,0,0])
+					#cylinder(h=100, r=crankAxisR+axisSlack, center=false);
+
+				}	
+			}
+
+// TODO relace with rotate gearsiced cube
+	*translate([+500+crankGearXPos-crankR-2*addendum, -500, -500-3*crankAxisR+crankGearZPos]) cube([1000,1000,1000], center=true);
 		
 
 	}
@@ -229,6 +267,7 @@ if (GENERATE_MUSIC_CYLINDER)
 		{
 			union()
 			{
+				MusicCylinder();
 				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2);
 				rotate([0, 180,0]) cylinder(h=musicH+gearH/2, r =musicCylinderR);
 				// PINS :)
@@ -337,6 +376,7 @@ if (GENERATE_PULLEY)
 	}
 }
 
+
 module MyAxisSnapCutout(h, z=0, mirr=0,extra=epsilonCSG)
 {
 	translate([0,0,z])
@@ -409,4 +449,41 @@ union(){
 		twist=hPos*twistScale/n,
 		slices=10);
 }
+}
+
+
+
+/// music section
+
+
+pinH = 2.5;
+pinR = 1.5;
+// also nr of notes
+pinNrX = 15;
+pinNrY = 12;
+teethNotes="C0 D0 E0 F0 G0 A0 B0 C1 D1 E1 F1 G1 A1 B1 C2 ";
+teethGap = 1;
+teethH = 0.6;
+
+teethHolderW=10;
+teethHolderH=4.5;
+
+
+
+module MusicCylinder()
+{
+	translate([0,0,-epsilon]) cylinder(r = musicCylinderR, h = musicCylinderH + epsilon, center=false, $fn=128);
+	for (x = [0:pinNrX-1], y = [0:pinNrY-1])
+	{
+		assign(index = y*pinNrX + x)
+		{
+			if (pins[index] == "X")
+			{
+				
+				rotate([0,0, y * pinStepY])
+					translate([musicCylinderR, 0, (0.5+x)*pinStepX]) rotate([0,90,0])
+							Pin();
+			}
+		}
+	}
 }
