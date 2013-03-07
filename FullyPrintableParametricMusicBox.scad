@@ -2,12 +2,12 @@ use <MCAD/involute_gears.scad>
 
 $fn=32;
 
-FOR_PRINT=true;
+FOR_PRINT=false;
 
 DEBUG_GEARS=false;
 
-GENERATE_MUSIC_CYLINDER=false;
-GENERATE_MID_GEAR=false;
+GENERATE_MUSIC_CYLINDER=true;
+GENERATE_MID_GEAR=true;
 GENERATE_CRANK_GEAR=true;
 
 GENERATE_CASE=false;
@@ -18,12 +18,12 @@ GENERATE_PULLEY=false;
 
 //pitch=2*3.1415*pitchRadius/numberTeeth;
 
-diametral_pitch = 1;
+diametral_pitch = 0.6;
 circular_pitch = 180/diametral_pitch;
 
 addendum = 1/diametral_pitch;
 
-
+musicH=7;
 gearH=4;
 wall=2;
 
@@ -33,13 +33,13 @@ pinH=1;
 // HoldderH is the height of the axis kegel
 
 crankAxisHolderH = 1.5;
-midAxisHolderH=1.9;
-musicAxisHolderH=1.9;
+midAxisHolderH=3;
+musicAxisHolderH=3;
 
 pulleySlack=0.4;
 crankSlack=0.2;
-snapAxisSlack=0.4; // for extra distance from axis to gears
-axisSlack=0.3; // for crank gear axis
+snapAxisSlack=0.6; // for extra distance from axis to gears
+axisSlack=0.3; // for crank gear axis to case
 
 pulleySnapL=1.2; // cutout to get Pulley in
 // higher tolerance makes the teeth thinner and they slip, too low tolerance jams the gears
@@ -47,7 +47,7 @@ gear_tolerance = 0.1;
 // used for the distance between paralell gears that should not touch (should be slightly larger than your layer with) 
 gear_gap = 1.0;
 gear_min_gap = 0.1;
-gear_hold_R = 2;
+gear_hold_R = 4;
 
 epsilonCSG = 0.1;
 
@@ -64,10 +64,10 @@ pulleyH=10;
 pulleyR=crankAxisR+2*wall;
 
 
-musicCylinderTeeth = 44;
+musicCylinderTeeth = 30;
 midSmallTeeth = 8;
-midBigTeeth = 33;
-crankTeeth = 11;
+midBigTeeth = 24;
+crankTeeth = 8;
 
 musicCylinderR = (musicCylinderTeeth/diametral_pitch)/2;
 midSmallR = (midSmallTeeth/diametral_pitch)/2;
@@ -96,6 +96,9 @@ crankGearZPos = midGearZPos + sin(crankGearAngle)*crankDist;
 echo(musicCylinderR);
 frameH = max(musicCylinderR, -midGearZPos+midBigR)+2*addendum;
 
+gearBoxW = 2 * (gearH+gear_gap+wall) + gear_gap;
+frameW = gearBoxW + musicH;
+
 
 
 // noteExtend in alpha angle projected to y and x-axis
@@ -117,7 +120,7 @@ musicCylinderRX = cos(noteBeta)*musicCylinderR;
 negXEnd = -(noteExtendX+musicCylinderRX);
 posXEnd = crankGearXPos + crankR + 2*addendum + wall;
 
-posYEnd = sin(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
+posYEnd = tan(noteAlpha)*(noteExtendX + musicCylinderRX+posXEnd);
 
  
 
@@ -141,40 +144,40 @@ if (GENERATE_CASE)
 		{
 	
 		// snapaxis for crank
-		MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
+		MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2+gear_gap, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
 	
 	
 	
 		// snapaxis for music cylinder
-		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=1, extra=gearH+2*gear_gap);
-		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2, mirr=0);
+		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2-gear_gap, mirr=1, extra=gearH+2*gear_gap);
+		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2 + gear_gap + musicH, mirr=0);
 	
 		// snapaxis for mid gear
 		MyAxisSnapHolder(h=midAxisHolderH, y =1.5*gearH, x=midGearXPos, z=midGearZPos, mirr=1);
-		MyAxisSnapHolder(h=midAxisHolderH, y =gearH/2-gear_gap, x=midGearXPos, z=midGearZPos, mirr=0);
+		MyAxisSnapHolder(h=midAxisHolderH, y =gearH/2+gear_gap, x=midGearXPos, z=midGearZPos, mirr=0);
 	
 		difference()
 		{
 			// side poly extruded and rotated to be side
 			rotate([-90,0,0]){
-				translate([0,0,-(gearH/2+gear_gap+wall)])
-					linear_extrude(height=2*(gearH+gear_gap+wall)) 
-						polygon(points=[[negXEnd,0],[posXEnd,-posYEnd],[posXEnd,frameH], [negXEnd,frameH]], paths=[[0,1,2,3]]);
+				translate([0,0,-(musicH+(gearH/2+2*gear_gap+wall))])
+					linear_extrude(height=frameW) 
+						polygon(points=
+[[negXEnd,0],[posXEnd,-posYEnd],[posXEnd,frameH], [negXEnd,frameH]], paths=[[0,1,2,3]]);
 	
 			
 			}
 
 // cutout, wall then remain
 		linear_extrude(height=4*frameH, center=true) 
-					polygon(points=[[negXEnd+wall,-(0.5*gearH+gear_gap)],
-
-
-//[1.5*crankAxisR,-(0.5*gearH+gear_gap)],
-//[1.5*crankAxisR,-(2.5*gearH+gear_gap)],
-//[midGearXPos-1.5*crankAxisR,-(2.5*gearH+gear_gap)],
-//[midGearXPos-1.5*crankAxisR,-(0.5*gearH+gear_gap)],
-
-[posXEnd-wall,-(0.5*gearH+gear_gap)],[posXEnd-wall,(1.5*gearH+gear_gap)], [negXEnd+wall,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
+					polygon(points=[
+[negXEnd+wall,-(0.5*gearH+2*gear_gap+musicH)],
+[musicCylinderR+1.5*addendum,-(0.5*gearH+2*gear_gap+musicH)],
+[musicCylinderR+1.5*addendum,-(0.5*gearH+2*gear_gap)],
+[posXEnd-wall,-(0.5*gearH+2*gear_gap)],
+[posXEnd-wall,(1.5*gearH+gear_gap)],
+ [negXEnd+wall,(1.5*gearH+gear_gap)]
+], paths=[[0,1,2,3,4,5,6]]);
 	
 			translate([crankGearXPos,0,crankGearZPos])
 			{
@@ -189,13 +192,25 @@ if (GENERATE_CASE)
 		// cutout, wall then remain
 		linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[
-
-[1*crankAxisR,(1.5*gearH+gear_gap)],
-[1*crankAxisR,-(2.5*gearH+gear_gap)],
-[musicCylinderR+1.5*addendum,-(2.5*gearH+gear_gap)],
+[0+1*crankAxisR,(1.5*gearH+gear_gap)],
+[0+1*crankAxisR,-(2.5*gearH+gear_gap+frameW)],
+[musicCylinderR+1.5*addendum,-(2.5*gearH+gear_gap+frameW)],
 [musicCylinderR+1.5*addendum,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
 
+
+// cutout for smallgear
+			linear_extrude(height=4*frameH, center=true) 
+					polygon(points=[
+[1*crankAxisR,-(0.5*gearH+2*gear_gap+wall)],
+[1*crankAxisR,-100],
+[posXEnd+1,-100],
+[posXEnd+1,-(0.5*gearH+2*gear_gap+wall)]], paths=[[0,1,2,3]]);
+		
+
 	}
+	
+
+
 
 
 	}
@@ -208,11 +223,12 @@ if (GENERATE_MUSIC_CYLINDER)
 {
 
 	rotate([FOR_PRINT?0:-90,0,0])
+		translate([0,0,-gear_gap])
 		difference()
 		{
-			MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2);
-			MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2), mirr=0);
-			MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
+			MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+musicH);
+			#MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-musicH, mirr=0);
+			#MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
 		}
 }
 
@@ -225,14 +241,15 @@ if (GENERATE_MID_GEAR)
 				translate([0,0,gearH]) 
 				{
 					difference(){
-						MyGear(n=midBigTeeth, hPos = gearH/2, hNeg=gearH/2-gear_gap,mirr=1);
+						MyGear(n=midBigTeeth, hPos = gearH/2, hNeg=gearH/2,mirr=1);
 						MyAxisSnapCutout(h=midAxisHolderH, z=(gearH/2), mirr=1);
 					}
 				}
+				translate([0,0,-gear_gap])
 				difference()
 				{
-					MyGear(n=midSmallTeeth, hPos = gearH/2+gear_gap+epsilonCSG, hNeg=gearH/2-gear_gap, mirr=1);
-					MyAxisSnapCutout(h=midAxisHolderH, z=-(gearH/2-gear_gap), mirr=0);
+					MyGear(n=midSmallTeeth, hPos = gearH/2+2*gear_gap+epsilonCSG, hNeg=gearH/2, mirr=1);
+					MyAxisSnapCutout(h=midAxisHolderH, z=-(gearH/2), mirr=0);
 				}
 				
 			}
@@ -255,9 +272,9 @@ if (GENERATE_CRANK_GEAR)
 						translate([0,50+crankAxisR-crankAxisCutAway,gearH/2+wall+gear_gap+2*crankAxisCutAwayH])cube([100,100,crankAxisCutAwayH*2], center=true);
 					}
 					cylinder(h=gearH/2+gear_gap-gear_min_gap, r=crankR-addendum, center=false);
-					MyGear(n=crankTeeth, hPos = gearH/2, hNeg=1.5*gearH, mirr=0);	
+					MyGear(n=crankTeeth, hPos = gearH/2, hNeg=1.5*gearH+gear_gap, mirr=0);	
 				}
-				MyAxisSnapCutout(h=crankAxisHolderH, z=-1.5*gearH);
+				MyAxisSnapCutout(h=crankAxisHolderH, z=-1.5*gearH-gear_gap);
 			}
 		}
 }
