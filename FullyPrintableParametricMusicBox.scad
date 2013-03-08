@@ -1,27 +1,50 @@
+/*
+ * Fully Printed Parametric Music Box With Exchangeable Song-Cylinders
+ * Copyright (C) 2013  Philipp Tiefenbacher <wizards23@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * See http://www.thingiverse.com/thing:53235/ for some documentation
+ *
+ */
+
 use <MCAD/involute_gears.scad>
 
-$fn=32;
+// Is this to generate models for 3D printing or for the assembled view?
+FOR_PRINT=1; // [0:assembled, 1:plate]
 
-// Should an assembled view of the models be made or do you wan
-FOR_PRINT=0;
+// Should the MusicCylinder be generated? 
+GENERATE_MUSIC_CYLINDER=1; // [1:yes, 0:no]
+// Should the Transmission Gear be generated?
+GENERATE_MID_GEAR=1; // [1:yes, 0:no]
+// Should the CrankGear be generated?
+GENERATE_CRANK_GEAR=1; // [1:yes, 0:no]
+// Should the Case (including the vibrating teeth) be generated?
+GENERATE_CASE=1; // [1:yes, 0:no]
+// Should the Crank be generated?
+GENERATE_CRANK=1; // [1:yes, 0:no]
+// Should the Pulley for the Crank be generated?
+GENERATE_PULLEY=1; // [1:yes, 0:no]
 
-DEBUG_GEARS=1;
-	
-GENERATE_MUSIC_CYLINDER=1;
-GENERATE_MID_GEAR=1;
-GENERATE_CRANK_GEAR=1;
+// the with of all the walls in the design.
+wall=2;
 
-GENERATE_CASE=1;
-
-GENERATE_CRANK=1;
-GENERATE_PULLEY=1;
-
-//////////////////////////////////////
-// general settings
-
-teethNotes="C0 C0#D0 D0#E0 F0 F0#G0 G0#A0 A0#B0 C1 C1#D1 D1#E1 F1 G1 A1 B1 C2 ";
+// how many teeth should there be? (also number of available notes)
 pinNrX = 13;
+// what should the notes on the teeth be? Each note is encoded by 3 characters: note (C,D,E,F,G,A,B), then the accidental (#, b or blank), and then the a one digit octave
+teethNotes="C 0C#0D 0D#0E 0F 0F#0G 0G#0A 0A#0B 0C 1C#1D 1D#1E 1F 1";
+
+// how many time slots should there be? (If you make this much higher you should also increase musicCylinderTeeth)
 pinNrY = 35;
+// the actual song. each time slot has pinNrX characters. X marks a pin everything else means no pin
 pins="X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X..............X..............X.............X..............X..............X..............X.............X.............X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X";
 /*
 XXXXXXXXXXXXX
@@ -73,22 +96,61 @@ X..X...X.....
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X              X X            X               X    ";
                
 */
+
+
+// the number of teeth on the music cylinder
+musicCylinderTeeth = 24;
+
+// nr of teeth on small transmission gear
+midSmallTeeth = 8;
+// nr of teeth on big transmission gear (for highest gear ratio this should be comparable but slightly smaller than musicCylinderTeeth)
+midBigTeeth = 20;
+// nr of teeth on crank gear
+crankTeeth = 8;
+
+//// Constants 
+
+// the density of PLA (or whatever plastic you are using) in kg/m3 ((( scientiffically derived by me by taking the average of the density values I could find onthe net scaled a little bit to take into account that the print is not super dense (0.7 * (1210 + 1430)/2) )))
+ro_PLA = 924; 
+// elasticity module of the plastic you are using in N/m2 ((( derived by this formula I hope I got the unit conversion right 1.6*   1000000 *(2.5+7.8)/2 )))
+E_PLA = 8240000; 
+// the gamma factor for the geometry of the teeth (extruded rectangle), use this to tune it if you have a finite state modell of the printed teeth :) taken from http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
+gammaTooth = 1.875; 
+// the frequency of C0 (can be used for tuning if you dont have a clue about the material properties of you printing material :)
+baseFrequC0 = 16.3516;
+
+
+// the angle of the teeth relative to the cylinder (0 would be normal to cylinder, should be some small (<10) positive angle)
+noteAlpha = 5;
+// the transmission gears angle (to help get the music cylinder out easily this should be negative)
+midGearAngle=-5;
+// should be positive but the gear must still be held by the case...TODO: calculate this automagically from heigth and angle...
+crankGearAngle=15;
+
+// diametral pitch of the gear (if you make it smaller the teeth become bigger (the addendum becomes bigger) I tink of it as teeth per unit :)
 diametral_pitch = 0.6;
+// the height of all the gears
 gearH=3;
-wall=2;
+
 
 // HoldderH is the height of the axis kegel
 
+// how far should the snapping axis that holds the crank gear be? (should smaller than the other two because its closer to the corner of the case)
 crankAxisHolderH = 1.5;
+// how far should the snapping axis that holds the transmission gear be?
 midAxisHolderH=3.3;
+// how far should the snapping axis that holds the music cylinder be?
 musicAxisHolderH=3.5;
 
 pulleySlack=0.4;
 crankSlack=0.2;
-snapAxisSlack=0.55; // for extra distance from axis to gears
-axisSlack=0.3; // for crank gear axis to case
+// for extra distance from axis to gears
+snapAxisSlack=0.55; 
+// for crank gear axis to case
+axisSlack=0.3; 
 
-pulleySnapL=1.2; // cutout to get Pulley in
+// cutout to get Pulley in
+pulleySnapL=1.2; 
 // higher tolerance makes the teeth thinner and they slip, too low tolerance jams the gears
 gear_tolerance = 0.1;
 // used for the distance between paralell gears that should not touch (should be slightly larger than your layer with) 
@@ -96,7 +158,13 @@ gear_gap = 1;
 gear_min_gap = 0.1;
 gear_hold_R = 4;
 
+// used for clean CSG operations
 epsilonCSG = 0.1;
+// reduce this for faster previews
+$fn=32;
+// Replace Gears with Cylinders to verify gear alignment
+DEBUG_GEARS=0; // [1:yes, 0:no]
+
 
 crankAxisR = 3;
 crankAxisCutAway = crankAxisR*0.8;
@@ -111,14 +179,7 @@ pulleyH=10;
 pulleyR=crankAxisR+2*wall;
 
 
-musicCylinderTeeth = 24;
-midSmallTeeth = 8;
-midBigTeeth = 20;
-crankTeeth = 8;
 
-noteAlpha = 5;
-midGearAngle=-5;
-crankGearAngle=15;
 
 
 
@@ -141,12 +202,7 @@ teethHolderW=5;
 teethHolderH=5;
 
 
-//// Constants 
-epsilon = 0.01;
-baseFrequC0 = 16.3516;
-ro_PLA = 0.7 * (1210 + 1430)/2; // http://de.wikipedia.org/wiki/Polylactide
-E_PLA = 1.6*   1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html
-gammaTooth = 1.875; // http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
+
 
 
 circular_pitch = 180/diametral_pitch;
@@ -262,13 +318,13 @@ module MyGear(n, hPos, hNeg, mirr=0)
 	}
 	if (!DEBUG_GEARS)
 	{
-		HBgear(n=n, mirr=mirr, hPos=hPos, hNeg=hNeg, tol=gear_tolerance);
+		HBgearWithDifferentLen(n=n, mirr=mirr, hPos=hPos, hNeg=hNeg, tol=gear_tolerance);
 	}
 }
 
 
-// based on Emmet's herringbone gear taken from thing: TODO
-module HBgear(n,hPos,hNeg,mirr=0, tol=0.25)// herringbone gear
+// based on Emmet's herringbone gear taken from thing: http://www.thingiverse.com/thing:34778
+module HBgearWithDifferentLen(n,hPos,hNeg,mirr=0, tol=0.25)// herringbone gear
 {
 twistScale=50;
 mirror([mirr,0,0])
@@ -309,8 +365,8 @@ echo(NoteToFrequ(9, 4, 0));
 //// SPECFIC functions
 function TeethLen(x) = 
 	1000*LengthOfTooth(NoteToFrequ(LetterToNoteIndex(teethNotes[x*3]), 
-			LetterToDigit(teethNotes[x*3+1]),
-			AccidentalToNoteShift(teethNotes[x*3+2])),
+			LetterToDigit(teethNotes[x*3+2]),
+			AccidentalToNoteShift(teethNotes[x*3+1])),
 			teethH/1000, E_PLA, ro_PLA);
 
 
@@ -327,7 +383,9 @@ function NoteToFrequ(note, octave, modification) = baseFrequC0*pow(2, octave)*po
 
 function AccidentalToNoteShift(l) =
 l=="#"?1:
-l=="b"?-1:0;
+l=="b"?-1:
+l==" "?0:
+INVALID_ACCIDENTAL_CHECK_teethNotes();
 
 // allow B and H
 // todo allow big and small letters
@@ -340,7 +398,7 @@ l=="G"?7:
 l=="A"?9:
 l=="H"?11:
 l=="B"?11: 
-0;
+INVALID_NOTE_CHECK_teethNotes();
 
 function LetterToDigit(l) = 
 l=="0"?0:
@@ -353,7 +411,7 @@ l=="6"?6:
 l=="7"?7:
 l=="8"?8:
 l=="9"?9:
-0;
+INVALID_DIGIT_IN_OCTAVE_CHECK_teethNotes();
 
 
 
