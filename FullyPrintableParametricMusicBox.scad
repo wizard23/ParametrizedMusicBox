@@ -3,9 +3,9 @@ use <MCAD/involute_gears.scad>
 $fn=32;
 
 // Should an assembled view of the models be made or do you wan
-FOR_PRINT=1;
+FOR_PRINT=0;
 
-DEBUG_GEARS=0;
+DEBUG_GEARS=1;
 	
 GENERATE_MUSIC_CYLINDER=1;
 GENERATE_MID_GEAR=1;
@@ -93,7 +93,7 @@ pulleySnapL=1.2; // cutout to get Pulley in
 gear_tolerance = 0.1;
 // used for the distance between paralell gears that should not touch (should be slightly larger than your layer with) 
 gear_gap = 1;
-gear_min_gap = 0.01;
+gear_min_gap = 0.1;
 gear_hold_R = 4;
 
 epsilonCSG = 0.1;
@@ -367,7 +367,7 @@ module Pin()
 		cube([pinStepX+4*teethGap, pinD, 2*(pinH)],center=false);
 
 translate([pinStepX/2,0,0])
-		rotate([0,-45,0]) translate([2.0*pinStepX,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
+		rotate([0,-45,0]) translate([4.0*pinStepX,0,0]) cube([8*pinStepX,8*pinStepX,8*pinStepX],center=true);
 	}
 }
 
@@ -407,7 +407,7 @@ module MusicBox()
 			translate([-maxTeethL, x *pinStepX + teethGap, 0]) 
 			{
 				// teeth holder
-				assign (leftAdd = (x == 0) ? gearBoxW-wall : 0, rightAdd = (x == pinNrX-1) ? wall/2+gear_gap : 0)
+				assign (leftAdd = (x == 0) ? gearBoxW : 0, rightAdd = (x == pinNrX-1) ? wall/2+gear_gap : 0)
 				{
 				translate([-(teethHolderW), epsilonCSG-leftAdd, 0]) 
 					cube([teethHolderW+maxTeethL-ll, pinStepX+2*epsilonCSG+leftAdd+rightAdd, teethHolderH]);
