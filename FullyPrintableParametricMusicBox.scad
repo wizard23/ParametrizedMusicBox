@@ -180,11 +180,11 @@ crankDirection = 0; // [1:Clockwise, 0:CounterClockwise]
 // HoldderH is the height of the axis kegel
 
 // how far should the snapping axis that holds the crank gear be? (should smaller than the other two because its closer to the corner of the case)
-crankAxisHolderH = 1.5;
+crankAxisHolderH = 1.55;
 // how far should the snapping axis that holds the transmission gear be?
 midAxisHolderH=3.3;
 // how far should the snapping axis that holds the music cylinder be?
-musicAxisHolderH=3.5;
+musicAxisHolderH=2.8;
 
 pulleySlack=0.4;
 crankSlack=0.2;
