@@ -3,9 +3,9 @@ use <MCAD/involute_gears.scad>
 $fn=32;
 
 // Should an assembled view of the models be made or do you wan
-FOR_PRINT=0;
+FOR_PRINT=1;
 
-DEBUG_GEARS=1;
+DEBUG_GEARS=0;
 	
 GENERATE_MUSIC_CYLINDER=1;
 GENERATE_MID_GEAR=1;
@@ -20,11 +20,59 @@ GENERATE_PULLEY=1;
 // general settings
 
 teethNotes="C0 C0#D0 D0#E0 F0 F0#G0 G0#A0 A0#B0 C1 C1#D1 D1#E1 F1 G1 A1 B1 C2 ";
-pinNrX = 15;
-pinNrY = 28;
-pins="    X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X              X X            X               X    ";
-               
+pinNrX = 13;
+pinNrY = 35;
+pins="X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X..............X..............X.............X..............X..............X..............X.............X.............X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X...................X...X..X.....X..X...X";
+/*
+XXXXXXXXXXXXX
+X............
+.X...........
+..X..........
+...X.........
+....X........
+.....X.......
+......X......
+.......X.....
+........X....
+.........X...
+..........X..
+...........X.
+............X
+.............
+X............
+..X..........
+....X........
+.....X.......
+.......X.....
+.........X...
+...........X.
+............X
+.............
+X...X..X.....
+X..X...X.....
+.............
+.X...X..X....
+.X..X...X....
+.............
+..X...X..X...
+..X..X...X...
+.............
+...X...X..X..
+...X..X...X..
+.............
+....X...X..X.
+....X..X...X.
+.............
+.....X...X..X
+.....X..X...X
 
+
+
+
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X          X X             XXX   XXX   X X         XXX   XXX   X X         XXX   XXX   X X             X X              X X            X               X    ";
+               
+*/
 diametral_pitch = 0.6;
 gearH=3;
 wall=2;
@@ -52,8 +100,8 @@ epsilonCSG = 0.1;
 
 crankAxisR = 3;
 crankAxisCutAway = crankAxisR*0.8;
-crankLength = 25;
-crankAxisCutAwayH = 5;
+crankLength = 12;
+crankAxisCutAwayH = 4;
 
 crankExtraH=5;
 crankH=crankExtraH+2*crankAxisCutAwayH;
@@ -63,9 +111,9 @@ pulleyH=10;
 pulleyR=crankAxisR+2*wall;
 
 
-musicCylinderTeeth = 22;
+musicCylinderTeeth = 24;
 midSmallTeeth = 8;
-midBigTeeth = 19;
+midBigTeeth = 20;
 crankTeeth = 8;
 
 noteAlpha = 5;
@@ -82,13 +130,14 @@ crankGearAngle=15;
 
 teethH = 3*0.3;
 
-pinH=2.0;
+pinH= 3;
+pteethMinD = 1.5;
 
-teethGap = max(gear_gap, pinH/(2*sqrt(2)));
+teethGap = pinH;
 
 pinD=1.5;
 
-teethHolderW=4;
+teethHolderW=5;
 teethHolderH=5;
 
 
@@ -96,7 +145,7 @@ teethHolderH=5;
 epsilon = 0.01;
 baseFrequC0 = 16.3516;
 ro_PLA = 0.7 * (1210 + 1430)/2; // http://de.wikipedia.org/wiki/Polylactide
-E_PLA = 2.6*   1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html
+E_PLA = 1.6*   1000000 *(2.5+7.8)/2; // http://www.kunststoff-know-how.de/index.php?/%C3%9Cbersicht-Biokunststoffe.html
 gammaTooth = 1.875; // http://de.wikipedia.org/wiki/Durchschlagende_Zunge#Berechnung_der_Tonh.C3.B6he
 
 
@@ -134,7 +183,7 @@ centerForCrankGearInsertion=(midBigR+crankR)/2;
 
 
 //noteExtend = wall+20;
-noteExtend = teethHolderW+maxTeethL; 
+noteExtend = teethHolderW+maxTeethL + pteethMinD; 
 
 midGearDist = musicCylinderR+midSmallR;
 crankDist = midBigR+crankR;
@@ -152,7 +201,7 @@ frameH = max(musicCylinderR, -midGearZPos+midBigR)+1.5*addendum;
 gearBoxW = 2 * (gearH+gear_gap+wall) + gear_gap;
 
 
-songH = musicH+teethGap;
+songH = musicH+teethGap+teethGap;
 frameW = gearBoxW + songH;
 
 
@@ -315,10 +364,10 @@ module Pin()
 	difference()
 	{
 		translate([-pinStepX/2,-pinD/2,-pinH])
-		cube([pinStepX+teethGap, pinD, 2*(pinH+0)],center=false);
+		cube([pinStepX+4*teethGap, pinD, 2*(pinH)],center=false);
 
 translate([pinStepX/2,0,0])
-		rotate([0,-45,0]) translate([2.0*pinStepX+pinH/2,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
+		rotate([0,-45,0]) translate([2.0*pinStepX,0,0]) cube([4*pinStepX,4*pinStepX,4*pinStepX],center=true);
 	}
 }
 
@@ -326,7 +375,8 @@ translate([pinStepX/2,0,0])
 
 module MusicCylinder(extra=0)
 {
-	translate([0,0,-extra]) cylinder(r = musicCylinderR-addendum/2, h = musicH+extra, center=false, $fn=128);
+	translate([0,0,-extra]) cylinder(r = musicCylinderR, h = teethGap+musicH+extra, center=false, $fn=128);
+	translate([0,0,teethGap])
 	for (x = [0:pinNrX-1], y = [0:pinNrY-1])
 	{
 		assign(index = y*pinNrX + x)
@@ -354,7 +404,7 @@ module MusicBox()
 	{
 		assign(ll = TeethLen(x))
 		{
-			translate([-maxTeethL, x *pinStepX, 0]) 
+			translate([-maxTeethL, x *pinStepX + teethGap, 0]) 
 			{
 				// teeth holder
 				assign (leftAdd = (x == 0) ? gearBoxW-wall : 0, rightAdd = (x == pinNrX-1) ? wall/2+gear_gap : 0)
@@ -403,10 +453,11 @@ if (GENERATE_CASE)
 		// PIANO :)
 		
 		translate([-(noteExtendX+musicCylinderRX),-(gearH/2+gear_gap+teethGap),0]) 
-			rotate([0,-noteAlpha*1,0])
+			rotate([0,-noteAlpha*1,0]){
 			
 				MusicBox();
-
+				translate([0,2*gearH+wall,-teethHolderW]) cube([-negXEnd,teethHolderW,teethHolderW]);
+			}
 	
 		// snapaxis for crank
 		MyAxisSnapHolder(h=crankAxisHolderH, x=crankGearXPos, y =gearH/2+gear_gap, z=crankGearZPos, mirr=0, extra=gear_gap+epsilonCSG);
@@ -513,12 +564,12 @@ if (GENERATE_MUSIC_CYLINDER)
 {
 	translate([FOR_PRINT?-1.5*(musicCylinderR+addendum):0,FOR_PRINT?-((musicCylinderR+addendum)+gearBoxW):0, FOR_PRINT?gearH/2-gear_gap:0])
 	rotate([FOR_PRINT?180:-90,0,0])
-		translate([0,0,-gear_gap])
+		translate([0,0,-(gear_gap)])
 		difference()
 		{
 			union()
 			{
-				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+0.3);
+				MyGear(n=musicCylinderTeeth, hPos = gearH/2, hNeg=gearH/2+gear_gap);
 				translate([0,0,-gearH/2-gear_gap/2]) cylinder(h=gear_gap+epsilonCSG, r2=musicCylinderR-addendum, r1=musicCylinderR-addendum+gear_gap);
 				rotate([0, 180,0]) 
 translate([0,0,teethGap+gearH/2]) 
