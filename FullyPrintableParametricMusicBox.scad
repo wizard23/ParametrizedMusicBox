@@ -547,7 +547,10 @@ if (GENERATE_CASE)
 	{
 		if (FOR_PRINT)
 		{
-			translate([0,0, 500+negXEnd*sin(noteAlpha)]) cube([1000, 1000, 1000], center=true);
+			//translate([0,0, 500+negXEnd*sin(noteAlpha)]) cube([1000, 1000, 1000], center=true);
+
+			assign(maxX = max(posXEnd, -negXEnd))
+			translate([0,0, 2*frameH+negXEnd*sin(noteAlpha)]) cube([3*maxX, 2*frameW, 4*frameH], center=true);
 		}
 	rotate([FOR_PRINT?180:0, FOR_PRINT?-noteAlpha:0,0])
 	{
@@ -692,7 +695,7 @@ rotate([0,0,27]) MusicCylinder(extra=teethGap+epsilonCSG);
 }
 
 // midGear
-color([0,0,1])
+color([1,0,0])
 if (GENERATE_MID_GEAR)
 {
 	translate([FOR_PRINT?1.5*(musicCylinderR+addendum):0,FOR_PRINT?(crankDirection ? -1 : 1)*-((musicCylinderR+addendum)+gearBoxW):0, FOR_PRINT?1.5*gearH:0])
