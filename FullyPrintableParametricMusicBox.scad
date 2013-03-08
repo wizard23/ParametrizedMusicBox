@@ -19,14 +19,14 @@
 use <MCAD/involute_gears.scad>
 
 // Is this to generate models for 3D printing or for the assembled view?
-FOR_PRINT=0; // [0:assembled, 1:plate]
+FOR_PRINT=1; // [0:Assembled, 1:PrintPlate]
 
 // Should the MusicCylinder be generated? 
-GENERATE_MUSIC_CYLINDER=1; // [1:yes, 0:no]
+GENERATE_MUSIC_CYLINDER=0; // [1:yes, 0:no]
 // Should the Transmission Gear be generated?
-GENERATE_MID_GEAR=1; // [1:yes, 0:no]
+GENERATE_MID_GEAR=0; // [1:yes, 0:no]
 // Should the CrankGear be generated?
-GENERATE_CRANK_GEAR=1; // [1:yes, 0:no]
+GENERATE_CRANK_GEAR=0; // [1:yes, 0:no]
 // Should the Case (including the vibrating teeth) be generated?
 GENERATE_CASE=1; // [1:yes, 0:no]
 // Should the Crank be generated?
@@ -45,7 +45,7 @@ teethNotes="C 0C#0D 0D#0E 0F 0F#0G 0G#0A 0A#0B 0C 1C#1D 1D#1E 1F 1";
 // how many time slots should there be? (If you make this much higher you should also increase musicCylinderTeeth)
 pinNrY = 35;
 // the actual song. each time slot has pinNrX characters. X marks a pin everything else means no pin
-pins="XXXXXXXXXXXXXX.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X...X..X...................X...X..X...................X...X..X...................X...X..X...................X...X..X...................X...X..X.............X..X...X...................X..X...X...................X..X...X...................X..X...X...................X..X...X...................X..X...X";
+pins="X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X.............X...X..X...................X...X..X...................X...X..X...................X...X..X...................X...X..X...................X...X..X.............X..X...X...................X..X...X...................X..X...X...................X..X...X...................X..X...X...................X..X...X";
 /*
 XXXXXXXXXXXXX
 X............
@@ -173,6 +173,9 @@ diametral_pitch = 0.6;
 // the height of all the gears
 gearH=3;
 
+// direction that crank hast to be turned it to play the song
+crankDirection = 1; // [1:Clockwise, 0:CounterClockwise]
+
 
 // HoldderH is the height of the axis kegel
 
@@ -212,7 +215,7 @@ crankAxisCutAway = crankAxisR*0.8;
 crankLength = 12;
 crankAxisCutAwayH = 4;
 
-crankExtraH=5;
+crankExtraH=8;
 crankH=crankExtraH+2*crankAxisCutAwayH;
 
 
@@ -293,7 +296,8 @@ crankGearZPos = midGearZPos + sin(crankGearAngle)*crankDist;
 
 echo("R of song cylinder");
 echo(musicCylinderR);
-frameH = max(musicCylinderR, -midGearZPos+midBigR)+1.5*max(addendum, pinH);
+maxMusicAddendum = 1.5*max(addendum, pinH);
+frameH = max(musicCylinderR, -midGearZPos+midBigR) + maxMusicAddendum;
 
 gearBoxW = 2 * (gearH+gear_gap+wall) + gear_gap;
 
@@ -463,10 +467,10 @@ module Pin()
 	difference()
 	{
 		translate([-pinStepX/2,-pinD/2,-pinH])
-		cube([pinStepX+4*teethGap, pinD, 2*(pinH)],center=false);
+		cube([pinStepX+4*teethGap, pinD, 2*(pinH+0.15)],center=false);
 
 translate([pinStepX/2,0,0])
-		rotate([0,-45,0]) translate([4.0*pinStepX,0,0]) cube([8*pinStepX,8*pinStepX,8*pinStepX],center=true);
+		rotate([0,-35,0]) translate([4.0*pinStepX,0,0]) cube([8*pinStepX,8*pinStepX,8*pinStepX],center=true);
 	}
 }
 
@@ -527,6 +531,8 @@ module MusicBox()
 
 ///// CODE
 
+mirror ([0, crankDirection,0])
+{
 
 
 
@@ -564,7 +570,7 @@ if (GENERATE_CASE)
 	
 	
 		// snapaxis for music cylinder
-		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2-gear_gap, mirr=1, extra=gearH+2*gear_gap);
+		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2-gear_gap, mirr=1, extra=gearH+2*gear_gap+wall/2);
 		MyAxisSnapHolder(h=musicAxisHolderH, y =gearH/2 +1*gear_gap +songH, extra=gear_gap+epsilonCSG, mirr=0);
 	
 		// snapaxis for mid gear
@@ -587,8 +593,8 @@ if (GENERATE_CASE)
 		linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[
 [negXEnd+wall,-(0.5*gearH+2*gear_gap+songH)],
-[musicCylinderR+1.5*addendum,-(0.5*gearH+songH+2*gear_gap)],
-[musicCylinderR+1.5*addendum,-(0.5*gearH+2*gear_gap)],
+[musicCylinderR+maxMusicAddendum,-(0.5*gearH+songH+2*gear_gap)],
+[musicCylinderR+maxMusicAddendum,-(0.5*gearH+2*gear_gap)],
 [posXEnd-wall,-(0.5*gearH+2*gear_gap)],
 [posXEnd-wall,(1.5*gearH+gear_gap)],
  [negXEnd+wall,(1.5*gearH+gear_gap)]
@@ -599,20 +605,20 @@ if (GENERATE_CASE)
 	}
 
 		// cutout, make sure gears can rotate
-		linear_extrude(height=4*frameH, center=true) 
+		#linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[
 [0+1*crankAxisR,(1.5*gearH+gear_gap)],
-[0+1*crankAxisR,-(2.5*gearH+gear_gap+frameW)],
-[musicCylinderR+1.5*addendum,-(2.5*gearH+gear_gap+frameW)],
-[musicCylinderR+1.5*addendum,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
+[0+1*crankAxisR,-(songH/2)],
+[musicCylinderR+maxMusicAddendum,-(songH/2)],
+[musicCylinderR+maxMusicAddendum,(1.5*gearH+gear_gap)]], paths=[[0,1,2,3]]);
 
 
 // cutout because of narrow smallgear
 			linear_extrude(height=4*frameH, center=true) 
 					polygon(points=[
-[1*crankAxisR,-(0.5*gearH+2*gear_gap+wall)],
-[1*crankAxisR,-100],
-[posXEnd+1,-100],
+[musicCylinderR+maxMusicAddendum+wall,-(0.5*gearH+2*gear_gap+wall)],
+[musicCylinderR+maxMusicAddendum+wall,-frameW],
+[posXEnd+1,-frameW],
 [posXEnd+1,-(0.5*gearH+2*gear_gap+wall)]], paths=[[0,1,2,3]]);
 
 
@@ -718,7 +724,7 @@ if (GENERATE_MID_GEAR)
 if (GENERATE_CRANK_GEAR)
 {
 	// crank gear
-	translate([FOR_PRINT?0:crankGearXPos, FOR_PRINT?-(gearBoxW/2+gearH+crankR+addendum):0, FOR_PRINT?(0.5*gearH+gear_gap):crankGearZPos])
+	translate([FOR_PRINT?0:crankGearXPos, FOR_PRINT?-(gearBoxW/2+wall/2+gearH+crankR+addendum):0, FOR_PRINT?(0.5*gearH+gear_gap):crankGearZPos])
 
 
 	//translate([crankGearXPos,0,crankGearZPos])
@@ -778,7 +784,7 @@ if (GENERATE_CRANK)
 
 if (GENERATE_PULLEY)
 {
-	translate([FOR_PRINT?crankLength-(crankAxisR+pulleySlack+wall):crankGearXPos, FOR_PRINT?gearBoxW*1.5:1.5*gearH+2*gear_gap+wall+crankH-crankExtraH, FOR_PRINT?crankExtraH+pulleyH+2*gear_gap:crankGearZPos])	
+	translate([FOR_PRINT?0:crankGearXPos, FOR_PRINT?gearBoxW*1.5:1.5*gearH+2*gear_gap+wall+crankH-crankExtraH, FOR_PRINT?crankExtraH+pulleyH+2*gear_gap:crankGearZPos])	
 	rotate([FOR_PRINT?180:-90,0,0])
 	translate([crankLength,0,0]) 
 	{
@@ -790,7 +796,7 @@ if (GENERATE_PULLEY)
 		translate([0,0,crankExtraH+gear_gap]) cylinder(h=pulleyH+gear_gap, r=crankR,center=false);
 	}
 }
-
+}
 
 
 
