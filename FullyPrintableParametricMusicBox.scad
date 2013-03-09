@@ -184,12 +184,12 @@ crankAxisHolderH = 1.55;
 // how far should the snapping axis that holds the transmission gear be?
 midAxisHolderH=3.3;
 // how far should the snapping axis that holds the music cylinder be?
-musicAxisHolderH=2.8;
+musicAxisHolderH=3.4;
 
 pulleySlack=0.4;
 crankSlack=0.2;
 // for extra distance from axis to gears
-snapAxisSlack=0.55; 
+snapAxisSlack=0.35; 
 // for crank gear axis to case
 axisSlack=0.3; 
 
