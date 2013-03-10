@@ -12,11 +12,25 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * See http://www.thingiverse.com/thing:53235/ for some documentation
+ * The latest version can be found here:
+ * https://github.com/wizard23/ParametrizedMusicBox 
+ *
+ * contibutions welcome! please send me pull requests!
+ *
+ * This project was started for the Thingiverse Customizer challenge
+ * and is online customizable here:
+ * http://www.thingiverse.com/thing:53235/ 
+ *
+ *
+ * Changelog:
+ *
+ * 2013-03-09, wizard23
+ * added name of song using write.scad
  *
  */
 
 use <MCAD/involute_gears.scad>
+use <write.scad>
 
 // Is this to generate models for 3D printing or for the assembled view?
 FOR_PRINT=1; // [0:Assembled, 1:PrintPlate]
@@ -33,6 +47,18 @@ GENERATE_CASE=1; // [1:yes, 0:no]
 GENERATE_CRANK=1; // [1:yes, 0:no]
 // Should the Pulley for the Crank be generated?
 GENERATE_PULLEY=1; // [1:yes, 0:no]
+
+// this text will be put on top of the music cylinder
+MusicCylinderName="test song";
+// how large should the font be
+MusicCylinderNameFontSize = 8;
+// how deep should the name be carved in?
+MusicCylinderNameDepth=0.6;
+// should the text be on the top or on the bottom of the music cylinder?
+MusicCylinderNamePosition=0; // [0:top, 1:bottom]
+
+
+
 
 // the with of all the walls in the design.
 wall=2;
@@ -689,8 +715,16 @@ rotate([0,0,27]) MusicCylinder(extra=teethGap+epsilonCSG);
 }
 				// PINS :)
 			}
-			MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-songH, mirr=0);
-			MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
+			union()
+			{
+				MyAxisSnapCutout(h=musicAxisHolderH, z=-(gearH/2)-songH, mirr=0);
+				MyAxisSnapCutout(h=musicAxisHolderH, z=gearH/2, mirr=1);
+	
+				// text
+				translate([0,0,MusicCylinderNamePosition == 1 ? gearH/2+1: -(songH+gearH/2-MusicCylinderNameDepth)]) 
+					scale([1,1,MusicCylinderNameDepth+1])
+						writecylinder(text=MusicCylinderName, where=[0,0,0], radius=musicCylinderR+MusicCylinderNameFontSize/2-wall, height=1, face="bottom", space=1.3, center=true, h=MusicCylinderNameFontSize);
+			}
 		}
 }
 
