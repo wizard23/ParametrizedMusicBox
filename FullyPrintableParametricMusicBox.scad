@@ -199,7 +199,7 @@ diametral_pitch = 0.6;
 // the height of all the gears
 gearH=3;
 
-// direction that crank hast to be turned it to play the song (has some bugs in clockwise better leave it clockwise
+// direction that crank hast to be turned it to play the song (has a bug: music is played backwards in clockwise mode so better leave it counter clockwise)
 crankDirection = 0; // [1:Clockwise, 0:CounterClockwise]
 
 
