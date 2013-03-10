@@ -31,7 +31,7 @@
  */
 
 use <MCAD/involute_gears.scad>
-use <write.scad>
+use <write/Write.scad>
 
 // Is this to generate models for 3D printing or for the assembled view?
 FOR_PRINT=1; // [0:Assembled, 1:PrintPlate]
@@ -51,6 +51,8 @@ GENERATE_PULLEY=1; // [1:yes, 0:no]
 
 // this text will be put on top of the music cylinder
 MusicCylinderName="test song";
+// What font do you want to use for the text?
+MusicCylinderNameFont="write/Letters.dxf"; //["write/Letters.dxf":Basic,"write/orbitron.dxf":Futuristic,"write/BlackRose.dxf":Fancy]
 // how large should the font be
 MusicCylinderNameFontSize = 8;
 // how deep should the name be carved in?
@@ -724,7 +726,7 @@ rotate([0,0,27]) MusicCylinder(extra=teethGap+epsilonCSG);
 				// text
 				translate([0,0,MusicCylinderNamePosition == 1 ? gearH/2+1: -(songH+gearH/2-MusicCylinderNameDepth)]) 
 					scale([1,1,MusicCylinderNameDepth+1])
-						writecylinder(text=MusicCylinderName, where=[0,0,0], radius=musicCylinderR+MusicCylinderNameFontSize/2-wall, height=1, face="bottom", space=1.3, center=true, h=MusicCylinderNameFontSize);
+						writecylinder(text=MusicCylinderName, where=[0,0,0], radius=musicCylinderR, height=1, face="bottom", space=1.3, center=true, h=MusicCylinderNameFontSize, font=MusicCylinderNameFont);
 			}
 		}
 }
