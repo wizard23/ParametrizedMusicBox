@@ -26,6 +26,7 @@
  *
  * 2013-03-09, wizard23
  * added name of song using write.scad
+ * fixed pulley position on print plate
  *
  */
 
@@ -824,7 +825,7 @@ if (GENERATE_CRANK)
 
 if (GENERATE_PULLEY)
 {
-	translate([FOR_PRINT?-2*wall:crankGearXPos, FOR_PRINT?(crankDirection ? -1 : 1)*gearBoxW*1.5:1.5*gearH+2*gear_gap+wall+crankH-crankExtraH, FOR_PRINT?crankExtraH+pulleyH+2*gear_gap:crankGearZPos])	
+	translate([FOR_PRINT?(musicCylinderR+maxMusicAddendum):crankGearXPos, FOR_PRINT?(crankDirection ? -1 : 1)*gearBoxW+pulleyR:1.5*gearH+2*gear_gap+wall+crankH-crankExtraH, FOR_PRINT?crankExtraH+pulleyH+2*gear_gap:crankGearZPos])	
 	rotate([FOR_PRINT?180:-90,0,0])
 	translate([crankLength,0,0]) 
 	{
