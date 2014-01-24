@@ -58,7 +58,7 @@ MusicCylinderNameFontSize = 8;
 // how deep should the name be carved in?
 MusicCylinderNameDepth=0.6;
 // should the text be on the top or on the bottom of the music cylinder?
-MusicCylinderNamePosition=0; // [0:top, 1:bottom]
+MusicCylinderNamePosition=1; // [0:top, 1:bottom]
 
 // the width of all the walls in the design.
 wall=2;
@@ -413,7 +413,15 @@ module Pin()
 
 module MusicCylinder(extra=0)
 {
-	translate([0,0,-extra]) cylinder(r = musicCylinderR, h = teethGap+musicH+extra, center=false, $fn=128);
+	translate([0,0,-extra]) difference(){
+            cylinder(r = musicCylinderR, h = teethGap+musicH+extra, center=false, $fn=128);
+	    cylinder(r = musicCylinderR - pinD*2.5, h = teethGap+musicH+extra + epsilonCSG, center=false, $fn=128);
+        }
+        for(rAng = [0,60,120]){
+          rotate([0,0,rAng]){
+            translate([-musicCylinderR+pinD,-pinD/2,-extra-epsilonCSG]) cube([musicCylinderR*2-pinD*2,pinD,teethGap+musicH+extra]);
+          }
+        }
 	translate([0,0,teethGap])
 	for (x = [0:pinNrX-1], y = [0:pinNrY-1])
 	{
