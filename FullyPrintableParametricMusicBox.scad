@@ -401,14 +401,12 @@ INVALID_DIGIT_IN_OCTAVE_CHECK_teethNotes();
 
 module Pin()
 {
-	difference()
-	{
-		translate([-pinStepX/2,-pinD/2,-pinH])
-		cube([pinStepX+4*teethGap, pinD, 2*(pinH+0.15)],center=false);
-
-translate([pinStepX/2,0,0])
-		rotate([0,-35,0]) translate([4.0*pinStepX,0,0]) cube([8*pinStepX,8*pinStepX,8*pinStepX],center=true);
-	}
+  rotate([90,0,0]) translate([-pinStepX/2,-pinH,-pinD/2])
+    linear_extrude(height = pinD, center = false) polygon(points =
+      [[0,0],
+       [0, 2*(pinH+0.15)],
+       [0+pinStepX/2+0.15, 2*(pinH+0.15)],
+       [cos(45) * 2*(pinH + 0.15)+(pinStepX/2+0.15), 0]]);
 }
 
 
